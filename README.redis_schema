@@ -1,0 +1,34 @@
+Redis data structure:
+---------------------
+graph_name
+#Node
+	:n
+	    :[id] (int)
+		:pn	-> set (parent node ids)
+		:cn	-> set (child node ids)
+		:ie	-> set (incoming edge ids)
+		:oe	-> set (outgoing edge ids)
+		:p	-> set (node property keys)
+		:p'[property name]' -> list (property value[s])
+#Edge
+	:e
+	    :[id] (int)
+		:in	-> scalar (start node id)
+		:on	-> scalar (end node id)
+		:p	-> set (edge property keys)
+		:p'[property name]' -> list (property value[s])
+
+#Index
+	:i
+	    :[n|e]	-> node or edge index
+            :p	-> set (indexed properties keys)
+            :p'[property name]'
+                :v	-> set (indexed values keys)
+                :v'[value]' -> set (member node/edge id's)
+
+#Graph
+	:nexteid -> integer incremented with each added edge
+	:nextnid -> integer incremented with each added node
+
+    :nodes -> set (all node ID's in graph)
+    :edges -> set (all edge ID's in graph)
