@@ -41,7 +41,7 @@ haters = g.gete(rel='hates') #get edges
 for h in haters:
   print h._in().name #incoming node - 'name' property
 
-jack.on = 'the hill'
+jack.on = 'the hill' #why node data names have underscores
 jill.has = 'a pail'
 
 jack._cn # set of jack's child node ID's
