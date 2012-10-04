@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 """ rgr.py - a Graph Database built on Redis """
 
-#imports
-
 import sys
 import redis_natives
 from redis_natives.datatypes import Primitive, Set, List, Dict
 from redis import Redis
 import logging
-#import re
+import re
 
-#constants
-
-logging.basicConfig(level=logging.CRITICAL)
+#logging.basicConfig(level=logging.CRITICAL)
+logging.basicConfig(level=logging.DEBUG)
 
 __all__ = (
     "Graph",
@@ -22,68 +19,68 @@ __all__ = (
 
 class Graph(object):
     """
-    Main interface for creating/removing/looking up graph elements.
+        Main interface for creating/removing/looking up graph elements.
 
-    prereq's:
+        prereq's:
 
-    - Redis server 
-    - redis.py
-    - redis_natives 
-    
-    usage: 
-    
-    from rgr import *
-    
-    g = Graph('mygraph') 
-
-    # where 'mygraph' is the DB name in Redis. default is 'rgr'.
-    # in the above example, all keys for this graph in Redis will
-    # be prepended with 'mygraph:'
-
-    node = g.addn(name='john',multiproperty=[1,2,3]) 
-    node2 = g.addn(name='mary',multiproperty=[1,2,3]) 
-
-    # add a node to the graph. returns a Node() object. Takes an 
-    # arbitrary number of **kwargs and adds them to the new node
-    # as properties. All properties are stored as lists in Redis, 
-    # but you can still use them as strings when they have a single
-    # value.
-
-    edge = g.adde(node, node2, rel="knows")
-    edge = g.adde(1, 0, rel="hates")
-
-    # add an edge from node1 to node2 (or between 2 node ID's). 
-    # (or a node and an ID for that matter)
-    # takes and arbitrary number of **kwargs as properties.
-
-    n = g.getn(name='john')
-    e = g.gete(rel='knows')
-
-    # returns an element or list of elements (depending on the case) 
-    # that match the given **kwargs. This method implements an
-    # exact lookup (no wildcards).
+        - Redis server 
+        - redis.py
+        - redis_natives 
         
-    g.deln(0)
-    g.dele(0)
+        usage: 
+        
+        from rgr import *
+        
+        g = Graph('mygraph') 
 
-    # delete an element from the graph with the given ID.
-    # deleting a node also deletes its adjacent edges.
-    
-    
-    all_node_ids = g.nodes 
-    all_edge_ids = g.edges
+        # where 'mygraph' is the DB name in Redis. default is 'rgr'.
+        # in the above example, all keys for this graph in Redis will
+        # be prepended with 'mygraph:'
 
-    #or, as generators yielding Node/Edge objects:
+        node = g.addn(name='john',multiproperty=[1,2,3]) 
+        node2 = g.addn(name='mary',multiproperty=[1,2,3]) 
 
-    for n in g.nodes(): 
-        print n._id
-    for e in g.edges():
-        print e._id
+        # add a node to the graph. returns a Node() object. Takes an 
+        # arbitrary number of **kwargs and adds them to the new node
+        # as properties. All properties are stored as lists in Redis, 
+        # but you can still use them as strings when they have a single
+        # value.
 
-    # Set() of all node / edge ids currently in graph.
-    # ( redis_natives.datatypes.Set type )
+        edge = g.adde(node, node2, rel="knows")
+        edge = g.adde(1, 0, rel="hates")
 
-    TODO: 
+        # add an edge from node1 to node2 (or between 2 node ID's). 
+        # (or a node and an ID for that matter)
+        # takes and arbitrary number of **kwargs as properties.
+
+        n = g.getn(name='john')
+        e = g.gete(rel='knows')
+
+        # returns an element or list of elements (depending on the case) 
+        # thkt match the given **kwargs. This method implements an
+        # exact lookup (no wildcards).
+            
+        g.deln(0)
+        g.dele(0)
+
+        # delete an element from the graph with the given ID.
+        # deleting a node also deletes its adjacent edges.
+        
+        
+        all_node_ids = g.nodes 
+        all_edge_ids = g.edges
+
+        #or, as generators yielding Node/Edge objects:
+
+        for n in g.nodes(): 
+            print n._id
+        for e in g.edges():
+            print e._id
+
+        # Set() of all node / edge ids currently in graph.
+        # ( redis_natives.datatypes.Set type )
+
+        TODO: 
         what if redis server not on localhost:6379 ?
         g.query() and related (Indexer.query())
     
@@ -91,14 +88,14 @@ class Graph(object):
 
     def __init__(self, name='rgr'):
         """
-        parameters: 
-            name: optional  
-                graph name in Redis. Keys in Redis are 
-                prepended with name+':'
+            parameters: 
+            ..name: optional  
+            ....graph name in Redis. Keys in Redis are 
+            ....prepended with name+':'
 
-        returns:
-            Graph() object
-
+            returns:
+            ..Graph() object
+            
         """
         self.name = name
         self.rc = Redis()
@@ -116,14 +113,14 @@ class Graph(object):
 
     def addn(self, **kwargs):
         """        
-        add node to graph.
-        
-        parameters:
-            kwargs: optional
-                 property key='value' or key=['values'] pairs 
+            add node to graph.
+            
+            parameters:
+            ..kwargs: optional
+            ....property key='value' or key=['values'] pairs 
 
-        returns:
-             Node() object just created.
+            returns:
+            ..Node() object just created.
 
         """
         n = Node(self, self.nextnid.value)
@@ -135,39 +132,41 @@ class Graph(object):
         
     def getn(self, **kwargs):
         """
-        Look up graph nodes.
-        
-        Parameters:
-            kwargs: optional
-                key='value' pairs to look up. Returns the 
-                intersection of results found for each key
-                (AND operation). 
-
-        Returns: 
-            None: if nothing was found 
-            Node(): if one node was found
-            list(): of Node's, if multiple nodes are found.
+            Look up graph nodes.
             
+            Parameters:
+            ..kwargs: optional
+            ....key='value' pairs to look up. Returns the 
+            ....intersection of results found for each key
+            ....(AND operation). 
+
+            Returns: 
+            ..list(): of Node's if any are found.
+                
         """
         nodes = []
         for n in self.index.lookup('n', **kwargs):
            # yield Node(self,n)
             nodes.append(Node(self,n))
-        if len(nodes) == 0:
-            return None
-        elif len(nodes) == 1: 
-            return nodes[0]
-        else:
             return nodes
+
+    def queryn(self, **kwargs):
+        """
+            regex lookup of nodes by property.
+            kwargs are re strings.
+
+        """
+        return self.index.query('n',**kwargs)
 
     def deln(self, node):
         """
-        delete node by id or Node() object.
-        Parameters:
-            node: required
-                Node or node ID to remove from graph.
+            delete node by id or Node() object.
 
-        Note: if by object, you'll want to also 'del node_obj'.
+            Parameters:
+            ..node: required
+            ....Node or node ID to remove from graph.
+
+            Note: if by object, you'll want to also 'del node_obj'.
 
         """
         if type(node) is int:
@@ -183,10 +182,7 @@ class Graph(object):
         else:
             raise TypeError("node type was '{}', {} :(".format(node, type(node)))
 
-        logging.debug("*** Info: deleting node: {}".format(n._id))
-        
         for ie in n._ie:
-            logging.debug("    Info: deleting incoming edge: {}".format(ie))
             if ie in self.edges:
                 self.dele(ie)
             else:
@@ -194,7 +190,6 @@ class Graph(object):
                     "tried to remove nonexistent incoming edge "\
                     "({}) from node ({}) - edge not in Graph.edges ".format(ie, n._id))
         for oe in n._oe:
-            logging.debug("    Info: deleting outgoing edge: {}".format(oe))
             if oe in self.edges:
                 self.dele(oe)
             else:
@@ -224,15 +219,15 @@ class Graph(object):
         add edge to graph.
          
         Parameters:
-            parent: required
-                Node or node id of start node.
-            child: required
-                Node or node id of end node.
-            kwargs: optional
-                key='value' properties to add to Edge
+        ..parent: required
+        ....Node or node id of start node.
+        ..child: required
+        ....Node or node id of end node.
+        ..kwargs: optional
+        ....key='value' properties to add to Edge
        
         Returns:        
-            Edge() just created.
+        ..Edge() just created.
 
         """
         e = Edge(self, self.nexteid.value)
@@ -240,9 +235,9 @@ class Graph(object):
             e.__setattr__(k, kwargs[k])
         self.edges.add(self.nexteid.value)
 
-        if type(parent) is Node:
+        if type(parent) is Node: 
             pn = parent
-        elif type(parent) is int:
+        elif type(parent) is int: 
             pn = Node(self,parent)
         elif type(parent) is Primitive or type(parent) is NodePrimitive:
             pn = Node(self,parent.value)
@@ -262,70 +257,61 @@ class Graph(object):
         else:
             raise TypeError("child type was '{}', {} :(".format(child, type(child)))
        
-        logging.debug("Info: Adding edge({}) from n({}) to n({})".format(e._id, pn._id, cn._id) )
 
         e._in.value = pn._id
-        logging.debug("    e._in({}): {}".format(e._id, e._in))
-        
         e._on.value = cn._id
-        logging.debug("    e._on({}): {}".format(e._id, e._on))
 
         if str(cn._id) not in pn._cn:
             pn._cn[str(cn._id)] = 1
         else:
             pn._cn.incr(str(cn._id))
-        logging.debug("    pn._cn({}): {}".format(pn._id, pn._cn.keys()))
 
         if str(pn._id) not in cn._pn:
             cn._pn[str(pn._id)] = 1
         else:
             cn._pn.incr(str(pn._id))
-        logging.debug("    cn._pn({}): {}".format(cn._id, cn._pn.keys()))
         
         pn._oe.add(e._id)
-        logging.debug("    pn._oe({}): {}".format(pn._id, pn._oe))
-
         cn._ie.add(e._id)
-        logging.debug("    cn._ie({}): {}".format(cn._id, cn._ie))
         
         self.nexteid.incr()
         return e
 
     def gete(self, **kwargs):
         """
-        Look up graph edges.
-        
-        Parameters:
-            kwargs: optional
-                key='value' pairs to look up. Returns the 
-                intersection of results found for each key
-                (AND operation). 
+            Look up graph edges.
+            
+            Parameters:
+            ..kwargs: optional
+            ....key='value' pairs to look up. Returns the 
+            ....intersection of results found for each key
+            ....(AND operation). 
 
-        Returns: 
-            None: if nothing was found 
-            Edge(): if one edge was found
-            list(): of Edge's, if multiple edges are found.
+            Returns: 
+            ..list(): of Edge's, if any are found.
             
         """
         edges = []
         for e in self.index.lookup('e', **kwargs):
         #    yield Edge(self,e)
             edges.append(Edge(self,e))
-        if len(edges) == 0:
-            return None
-        elif len(edges) == 1:
-            return edges[0]
-        else:
             return edges 
 
+    def querye(self, **kwargs):
+        """
+            regex lookup of edges by property.
+            kwargs are re strings.
+
+        """
+        return self.index.query('e',**kwargs)
     def dele(self, edge):
         """
-        delete edge by id or Edge() object.
-        Parameters:
-            edge: required
-                Edge or edge ID to remove from graph.
+            delete edge by id or Edge() object.
+            Parameters:
+            ..edge: required
+            ....Edge or edge ID to remove from graph.
 
-        Note: if by object, you'll want to also 'del edge_obj'.
+            Note: if by object, you'll want to also 'del edge_obj'.
 
         """
         if type(edge) is int:
@@ -336,7 +322,6 @@ class Graph(object):
             e = Edge(self,int(edge))
         else:
             raise TypeError("edge type was '{}', {} :(".format(edge, type(edge)))
-        logging.debug("    *** deleting edge {}".format(e._id))
        
         parent = None
         child = None
@@ -413,9 +398,11 @@ class Graph(object):
             self.rc.delete(e._on.key)
         if self.rc.exists(e._p.key):
             self.rc.delete(e._p.key)
+
     def _dump(self):
         """
-        dumps all graph data to stdout in human-readable format.
+            dumps all graph data to 
+            stdout in human-readable format.
         
         """
         print '===================='
@@ -446,20 +433,19 @@ class Graph(object):
 class GraphElement(object):
     def __setattr__(self, name, value):
         """ 
-        (abstract?) Base class for Node's and Edges. 
+            (abstract?) Base class for Node's and Edges. 
 
-        all properties get placed into _properties dict
-        unless they are instantiated during __init__.
-        I stole a couple of lines from bulbflow to 
-        make that happen.
+            all properties get placed into _properties dict
+            unless they are instantiated during __init__.
+            I stole a couple of lines from bulbflow to 
+            make that happen.
 
         """
-#begin stolen from bulbflow:
+        #begin stolen from bulbflow:
         dict_ = self.__dict__
         _initialized = dict_.get("_initialized", False)
-
         if name in dict_ or _initialized is False:
-#end stolen from bulbflow
+        #end stolen from bulbflow
             object.__setattr__(self, name, value)
         else:
             self._properties[name] = IndexList(self._graph.rc, self, name, self._name+":p'"+name+"'") 
@@ -467,8 +453,7 @@ class GraphElement(object):
                 self._properties[name].append(value) #append calls Indexer.update
                 self._p.add(name)
             else:
-                #de-index, remove, and re-add property
-                self._graph.index.rm(self._type, self._id, name, list(set(self._properties[name])))
+                #remove and re-add property - index updated on re-add
                 if self._graph.rc.exists(self._properties[name].key):
                     self._graph.rc.delete(self._properties[name].key)
                 self._p.remove(name)
@@ -476,10 +461,10 @@ class GraphElement(object):
         
     def __getattr__(self, name):
         """
-        python ignores this if it finds something in
-        __dict__, otherwise, search _properties and
-        throw an error if you try to access a property that
-        doesn't exist.
+            python ignores this if it finds something in
+            __dict__, otherwise, search _properties and
+            throw an error if you try to access a property that
+            doesn't exist.
         """
         try:
             return self._properties[name]
@@ -488,9 +473,9 @@ class GraphElement(object):
 
     def __delattr__(self, name):
         """
-        delete an attribute from an element.
-        i.e. `del node.foo` removes 'foo' from
-        redis and the index.
+            delete an attribute from an element.
+            i.e. `del node.foo` removes 'foo' from
+            redis and the index.
         """
         self._graph.index.rm(self._type, self._id, name, self._properties[name])
         del self._properties[name]
@@ -501,80 +486,83 @@ class GraphElement(object):
   
 class Node(GraphElement):
     """
-    Represents a graph node. You probably won't often need
-    to create these directly, but you can without issue (so long
-    as it already exists in the graph).
+        Represents a graph node. You probably won't often need
+        to create these directly, but you can without issue (so long
+        as it already exists in the graph).
 
-    As it relates to Redis:
-    - Node data is read directly from Redis when a Node() is instantiated.
-    - Changes to a Node() are immediately reflected in Redis.
-    - Changes to Redis from an outside source would (I believe) be immediately
+        As it relates to Redis:
+        - Node data is read directly from Redis when a Node() is instantiated.
+        - Changes to a Node() are immediately reflected in Redis.
+        - Changes to Redis from an outside source would (I believe) be immediately
         reflected by the Node()
-    - del node_obj doesn't delete any data from redis.
+        - del node_obj doesn't delete any data from redis.
 
-    usage:
-    
+        usage:
+        
         g = Graph()
         n = g.addn()
 
-    Node properties:
+        Node properties:
 
         #set a node property: these are auto indexed:
-    
+        
         n.name = "fred"
         # or:
         n.__setattr__('name','fred')
 
-    Node data: 
+        Node data: 
+
         data members themselves only contain Node/Edge ID's. However,
         if you call() them, you'll be given a generator which yields
         their corresponding Node/Edge object.
 
         Callable data members are:
         _oe, _ie, _pn, _cn
-    
+        
         n._pn # might produce set(0,5,12)
-        for i in n._pn():
-            print i
+
+        for i in n._pn(): print i
         # would produce :
         # <rgr.Node object at 0xdeadbeef>
         # <rgr.Node object at 0x...>
         # <rgr.Node object at 0x...>
 
-    type is redis_natives.datatypes.Set:
+        type is redis_natives.datatypes.Set:
 
         n._p          # keys of a node's properties
         n._properties # dict of node's property data
-       
-    type rgr.EdgeSet: 
+           
+        type rgr.EdgeSet: 
+
         n._oe         # outgoing edge IDs 
         n._oe()       # generator producing outgoing Edge's
         n._ie         # incoming edge IDs
         n._ie()       # generator producing incoming Edge's
-       
-    Type rgr.NodeDict: 
+           
+        Type rgr.NodeDict: 
+
         n._pn         # parents' IDs and the number of edges coming from each 
         n._pn()       # generator producing all parent nodes
         n._cn         # childrens' IDs and the number of edges going to each
         n._cn()       # generator producing all child nodes
-    
         # don't edit this stuff directly.  
-    
+
     """
     def __init__(self,graph,id):
         """
-        initialize a Node.
-        Parameter:
-            graph: required
-                parent Graph() object
-        Parameter:
-            id: required
-                ID that the node will use. If it doesn't exist 
-                in redis, it will be created there. Don't create
-                new nodes directly, though, because Graph() keeps
-                track of created nodes via Graph.addn().
-        Returns:
-            Node() 
+            initialize a Node.
+
+            Parameters:
+            ..graph: required
+            ....parent Graph() object
+            ..id: required
+            ....ID that the node will use. If it doesn't exist 
+            ....in redis, it will be created there. Don't create
+            ....new nodes directly, though, because Graph() keeps
+            ....track of created nodes via Graph.addn().
+
+            Returns:
+            ..Node() 
 
         """
         self._properties = {} 
@@ -595,23 +583,23 @@ class Node(GraphElement):
   
 class Edge(GraphElement):
     """
-    Represents a graph edge. You probably won't often need
-    to create these directly, but you can without issue (so long
-    as it already exists in the graph).
+        Represents a graph edge. You probably won't often need
+        to create these directly, but you can without issue (so long
+        as it already exists in the graph).
 
-    As it relates to Redis, the same rules apply as for Node()'s.
+        As it relates to Redis, the same rules apply as for Node()'s.
 
-    usage:
+        usage:
     
         g = Graph()
         n1 = g.addn()
         n2 = g.addn()
 
         e = g.adde(n1,n2,rel="knows")
-        nid1, nid2 = n1._id, n2._id #id is an int()
+        nid1, nid2 = n1._id, n2._id    # id is an int()
         e2 = g.adde(nid2,nid1,rel="hates")
 
-    Edge properties:
+        Edge properties:
 
         #set an edge property: these are auto indexed:
     
@@ -619,32 +607,34 @@ class Edge(GraphElement):
         # or:
         e2.__setattr__('how_much','a lot!')
 
-    Edge data (private): 
+        Edge data (private): 
 
         callable: 
         _in, _on
         
-    type is redis_natives.datatypes.Set:
+        type is redis_natives.datatypes.Set:
+
         e._p          # keys of a edge's properties
 
-    type is rgr.NodePrimitive:
+        type is rgr.NodePrimitive:
+
         e._in         # incoming node ID
         e._in()       # incoming Node()
         e._on         # outgoing node ID 
         e._on()       # outgoing Node()
 
-    regular python dict(): 
+        regular python dict(): 
+
         e._properties # dict of edge's property data
-    
         # don't edit this stuff directly.  
-    
-    TODO: make Edge._on(), etc, return a Node() rather than
-        just a Node ID
-    
+
     """
     def __init__(self,graph,id):
         """
-        same as Node().
+            same as Node();
+            see Node.__init__() docstrings for
+            more information.
+
         """
         self._properties = {} 
         self._graph = graph
@@ -665,14 +655,14 @@ class Edge(GraphElement):
 
 class Indexer(object):
     """
-    Class which handles indexing of node and edge properties.
-    
-    it's currently pretty ugly, and I'll clean it up later.
-    You probably won't use it directly for anything - the only
-    useful functions, lookup() and (future) query() - will be
-    called by Graph() and returned to you in a more useful format.
+        Class which handles indexing of node and edge properties.
+        
+        it's currently pretty ugly, and I'll clean it up later.
+        You probably won't use it directly for anything - the only
+        useful functions, lookup() and (future) query() - will be
+        called by Graph() and returned to you in a more useful format.
 
-    TODO: document & tidy up
+        TODO: document & tidy up
 
     """
     def __init__(self, graph, indices=['n','e']):
@@ -685,37 +675,36 @@ class Indexer(object):
 
     def add_index(self, name):
         """
-        add index to Indexer. currently only supporting
-        built-in 'n' and 'e' indices, for nodes & edges.
+            add index to Indexer. currently only supporting
+            built-in 'n' and 'e' indices, for nodes & edges.
     
         """
-           
         this_index = {}
         prefix = ':'.join([self.graph.name,'i',name])
         this_index['prefix'] = prefix
         this_index['property_keys'] = Set(self.graph.rc, ':'.join([prefix, 'p']))
         this_index['properties'] = {}
-        for i in this_index['property_keys']:
-            this_index['properties'][i] = {}
-            this_index['properties'][i]["_all_values"] = Set(self.graph.rc, ':'.join([prefix,"p'"+i+"'","v"]))
-            for v in this_index['properties'][i]["_all_values"]:
-                this_index['properties'][i][v] = Set(self.graph.rc, ':'.join([prefix,"p'"+i+"'","v'"+v+"'"]))
+        for p in this_index['property_keys']:
+            this_index['properties'][p] = {}
+            this_index['properties'][p]["_all_values"] = Set(self.graph.rc, ':'.join([prefix,"p'"+p+"'","v"]))
+            for v in this_index['properties'][p]["_all_values"]:
+                this_index['properties'][p][v] = Set(self.graph.rc, ':'.join([prefix,"p'"+p+"'","v'"+v+"'"]))
         return this_index
 
     def add(self, i, id, name, value_list):
         """
-        index the property/value(s) of an element.
-        i: index name
-        id: element ID
-        name: name of property
-        value_list: list() of values to index for given property.
+            index the property/value(s) of an element.
+            i: index name
+            id: element ID
+            name: name of property
+            value_list: list() of values to index for given property.
 
-        TODO: this should be private.
-        TODO: only add one value at a time.
-        TODO: only call update() externally.
+            TODO: this should be private.
+            TODO: only add one value at a time.
+            TODO: only call update() externally.
     
         """
-        self.index[i]['property_keys'].add(name)
+        self.index[i]['property_keys'].add(name) # it's a set, unique members
         if name not in self.index[i]['properties'].keys():
             self.index[i]['properties'][name] = {}
             self.index[i]['properties'][name]["_all_values"] = Set(
@@ -732,15 +721,15 @@ class Indexer(object):
         
     def rm(self, i, id, name, value_list):
         """
-        de-index the property/value(s) of an element.
-        i: index name
-        id: element ID
-        name: name of property
-        value_list: list() of values to de-index for given property.
+            de-index the property/value(s) of an element.
+            i: index name
+            id: element ID
+            name: name of property
+            value_list: list() of values to de-index for given property.
 
-        TODO: this should be private.
-        TODO: only remove one value at a time.
-        TODO: only call update() externally.
+            TODO: this should be private.
+            TODO: only remove one value at a time.
+            TODO: only call update() externally.
     
         """
         _props = self.index[i]['properties']
@@ -754,7 +743,11 @@ class Indexer(object):
                 self.index[i]['property_keys'].remove(name)
 
     def update(self, i, id, name):
-        """when a property is modified, update the index accordingly"""
+        """
+            when a property is modified, update the index accordingly
+
+        """
+        # TODO: duhh ... use self.index[i]!!!
         #get node property from redis
         property_key = ':'.join([self.graph.name,i,str(id),"p'"+name+"'"])
         node_property_values_list = List(self.graph.rc, property_key) 
@@ -780,40 +773,76 @@ class Indexer(object):
                     self.rm(i, id, name, [value])
     def lookup(self, i, **kwargs):
         """
-        public method, used by Graph().
-        
-        i: index to look through
-        kwargs: properties to search
+            public method, used by Graph().
+            
+            i: index to look through
+            kwargs: properties to search
 
-        gets matching id's for each kwarg, then
-        returns the intersection of the given sets.
-        (AND operation)
+            gets matching id's for each kwarg, then
+            returns the intersection of the given sets.
+            (AND operation)
 
-        return:
-            set of matching element ID's
+            return:
+            ..set of matching element ID's
 
-        TODO: check for no kwargs and do something?
+            TODO: check for no kwargs and do something?
+            possibly or_lookup, and_lookup, etc
 
         """
         indices = []
         for k in kwargs.keys():
-            indices.append(
-            set(Set(
-                self.graph.rc, 
-                ':'.join([self.graph.name,'i',i,"p'"+k+"'","v'"+kwargs[k]+"'"]))
-            ))
+            try:
+                indices.append(
+                    set(
+                        self.index[i]['properties'][k][kwargs[k]]
+                ))
+            except KeyError:
+                return set()
         return set.intersection(*indices)
 
-#TODO:    def query(self, **kwargs):
-#        pass
+    def query(self, i, **kwargs):
+        """
+            regular expression version of lookup.
+            searching for nonexistent properties will
+            simply cause this function to return an empty set.
+        """
+        indices = []
+        for k in kwargs.keys():
+            search_nodes = self.get_property_members(i, k)
+            if not search_nodes:
+                return set() # oops, nonexistent property
+            match_nodes = set()
+            for sn in search_nodes:
+                node = Node(self.graph, sn)
+                for prop in node._properties[k]:
+                    if re.search(kwargs[k], prop):
+                        match_nodes.add(node)
+            indices.append(match_nodes)
+        return set.intersection(*indices)
 
+    def get_property_members(self, i, name):
+        """
+            all elements that have a given property.
+        """
+        idx = self.index[i]
+        try: 
+            prop = idx['properties'][name]
+        except KeyError:
+            return set()
+        values = prop['_all_values']
+        nodes = set()
+        for v in values:
+            nodes = nodes.union(set(prop[v]))
+        return nodes
 
 class IndexList(List):
-    """ Extension of redis_natives.datatype.List to allow for indexing
+    """ 
+        Extension of redis_natives.datatype.List to allow for indexing
         operations on append, remove, etc ...
         
         Each method just calls super() and then appends a call to 
         Indexer.update().
+
     """
     def __init__(self, client, graph_element, name, key, iter=[]):
         super(IndexList, self).__init__(client, key, iter)
@@ -821,8 +850,10 @@ class IndexList(List):
         self._name = name
 
     def append(self, el):
-        """Pushes element ``el`` at the end of this list.
+        """
+            Pushes element ``el`` at the end of this list.
             extension to allow indexing.
+
         """
         super(IndexList,self).append(el)
         self._graph_element._graph.index.update(
@@ -832,10 +863,11 @@ class IndexList(List):
     
     def remove(self, val, n=1, all=False):
         """
-        Removes ``n`` occurences of value ``el``. When ``n`` is ``0``
-        all occurences will be removed. When ``n`` is negative the lookup
-        start at the end, otherwise from the beginning.
-        Returns number of removed values as ``int``.
+            Removes ``n`` occurences of value ``el``. When ``n`` is ``0``
+            all occurences will be removed. When ``n`` is negative the lookup
+            start at the end, otherwise from the beginning.
+            Returns number of removed values as ``int``.
+
         """
         super(IndexList,self).remove(val,n,all)
         self._graph_element._graph.index.update(
@@ -844,7 +876,10 @@ class IndexList(List):
             self._name)
    
     def extend(self, iter):
-        """Extends this list with the elements of ther iterable ``iter``
+        """
+            Extends this list with the 
+            elements of ther iterable ``iter``
+            
         """
         super(IndexList,self).extend(iter)
         self._graph_element._graph.index.update(
@@ -853,7 +888,10 @@ class IndexList(List):
             self._name)
 
     def insert(self, idx, el):
-        """Insert element ``el`` at index ``idx``
+        """
+            Insert element ``el`` 
+            at index ``idx``
+            
         """
         super(IndexList,self).insert(idx,el)
         self._graph_element._graph.index.update(
@@ -862,7 +900,10 @@ class IndexList(List):
             self._name)
     
     def pop(self, idx=None):
-        """Remove and return element at index ``idx``.
+        """
+            Remove and return 
+            element at index ``idx``.
+            
         """
         return_el = super(IndexList,self).pop(idx)
         self._graph_element._graph.index.update(
@@ -872,18 +913,28 @@ class IndexList(List):
         return return_el
 
     def __repr__(self):
-        """ added for debugging. should probably
-            be removed. """
+        """
+            added for debugging. should probably
+            be removed. 
+            
+        """
         return str([i for i in iter(self)])
 
     def __str__(self):
-        """ added for debugging. should probably
-            be removed. """
+        """
+            added for debugging. should probably
+            be removed. 
+            
+        """
         return self.__repr__()
 
 
 class NodeSet(Set):
-    """ make this a callable for our own twisted purposes."""
+    """ 
+        make this a callable 
+        for our own twisted purposes.
+
+    """
     def __init__(self, client, graph, key, iter=[]):
         super(NodeSet, self).__init__(client, key, iter)
         self._g = graph
@@ -893,7 +944,11 @@ class NodeSet(Set):
 
 
 class EdgeSet(Set):
-    """ make this a callable for our own twisted purposes."""
+    """ 
+        make this a callable 
+        for our own twisted purposes.
+
+    """
     def __init__(self, client, graph, key, iter=[]):
         super(EdgeSet, self).__init__(client, key, iter)
         self._g = graph
@@ -903,7 +958,11 @@ class EdgeSet(Set):
 
 
 class NodeDict(Dict):
-    """ make this a callable for our own twisted purposes."""
+    """ 
+        make this a callable 
+        for our own twisted purposes.
+
+    """
     def __init__(self, client, graph, key, iter=None):
         super(NodeDict, self).__init__(client, key, iter)
         self._g = graph
@@ -913,7 +972,11 @@ class NodeDict(Dict):
 
 
 class NodePrimitive(Primitive):
-    """ make this a callable for our own twisted purposes."""
+    """ 
+        make this a callable 
+        for our own twisted purposes.
+
+    """
     def __init__(self, client, graph, key, value=None):
         super(NodePrimitive, self).__init__(client, key, value)
         self._g = graph

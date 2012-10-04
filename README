@@ -45,6 +45,8 @@
      |  
      |  n = g.getn(name='john')
      |  e = g.gete(rel='knows')
+     |  n = g.queryn(name='j.*') # just like get, only with regex's
+     |  e = g.querye(rel='k.*')
      |  
      |  # returns an element or list of elements (depending on the case) 
      |  # that match the given **kwargs. This method implements an
@@ -74,9 +76,6 @@
      |  TODO: 
      |  ---------------------------
      |      what if redis server not on localhost:6379 ?
-     |      g.query() and related (Indexer.query())
-     |      g.nodes() - return a list of nodes as Node()'s
-     |      g.edges() - return a list of edges as Edge()'s
      |  ______________________________________________________________________
      |  
      |  Methods defined here:
@@ -172,6 +171,16 @@
      |          Node(): if one node was found
      |          list(): of Node's, if multiple nodes are found.
      |     
+     |  ----------------------------------------------------------------------
+     |  querye(self, **kwargs)
+     |  ----------------------------------------------------------------------
+     |      just like gete, only kwarg values are regex strings.
+     |
+     |  ----------------------------------------------------------------------
+     |  queryn(self, **kwargs)
+     |  ----------------------------------------------------------------------
+     |      just like getn, only kwarg values are regex strings.
+     |
      |  ----------------------------------------------------------------------
      |  _dump(self)
      |  ----------------------------------------------------------------------

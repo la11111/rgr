@@ -15,6 +15,8 @@ one, two, three, done :)
 
 This is the first project I've published on GitHub - It's still ugly, as I uploaded it as soon as it was bugfree*; If you find it useful and have suggestions, feel free to send them, post a patch, or whatever you do in git (I'm a git n00b as well ;P - I'll figure it out)
 
+I believe it should be relatively stable at this point.
+
 ###Special thanks:
 
 http://github.com/peta/redis-natives-py - this project would have been impossible to complete so rapidly without it. A nice implementation. :)
@@ -57,6 +59,8 @@ haters = g.gete(rel='hates') #get edges
 for h in haters:
   print h._in().name #incoming node - 'name' property
 
+jnodes = g.queryn(name="j.*")
+
 jack.on = 'the hill' #why node data names have underscores
 jill.has = 'a pail'
 
@@ -66,9 +70,6 @@ for node in jack._cn(): # properties are callable
 
 ```
 ###Todo:
-
-#####Graph():
-- query() related methods; get nodes by relationship, regexp, etc. 
 
 #####Node/Edge(): 
 - addn()
