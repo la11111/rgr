@@ -2,6 +2,8 @@
 
 a graph database for Python, built on Redis
 
+###Update: This code sucks and needs to be rewritten from scratch basically. So I've decided to do that. 
+
 ###Rationale:
 - redis is cool and I wanted to learn it.
 - I needed a graph database; neo4j is too heavy, where redis_wrap/redis_graph are a bit too light. I'm hoping that rgr will be just right :)
