@@ -80,9 +80,7 @@ class Graph(object):
             raise ValueError(node)
         in_edges = self.redis.smembers('{}:n:{}:ie'.format(self.name, node))
         out_edges = self.redis.smembers('{}:n:{}:oe'.format(self.name, node))
-        for e in in_edges:
-            self.del_edge(e)
-        for e in out_edges:
+        for e in in_edges | out_edges:
             self.del_edge(e)
         props = node_obj.properties()
         for p in props.keys():
@@ -121,7 +119,7 @@ class Graph(object):
         return [Node(self, x) for x in self.redis.smembers(self.nodes_key)]
 
     def edges(self):
-        return [Edges(self, x) for x in self.redis.smembers(self.edges_key)]
+        return [Edge(self, x) for x in self.redis.smembers(self.edges_key)]
 
     def get_nodes(self, **kwargs):
         return [Node(self, x) for x in self.redis.sinter(['{}:i:n:{}:{}'.format(self.name, k, kwargs[k]) for k in kwargs])]

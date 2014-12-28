@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import random
-from rgr import *
+from rgr import Graph
 import string
 import sys
 
@@ -23,77 +23,51 @@ def make_random_kwargs():
 def dump_everything():
     print '===================='
     print 
-    print "nodes:", g.nodes
-    print "edges:", g.edges
+    print "nodes:", g.nodes()
+    print "edges:", g.edges()
     print "leftovers:"
-    for k in g.rc.keys(): print k
+    for k in g.redis.keys(): print k
     print 
     print '===================='
-    for node in g.nodes:
-        n = Node(g,node) 
+    for n in g.nodes():
         print "---"
-        print 'id', n._id
-        print 'pn:'
-        for k in n._pn:
-            print '\t', k, n._pn[k]
-        print 'cn:'
-        for k in n._cn:
-            print '\t', k, n._cn[k]
-        print 'oe', n._oe
-        print 'ie', n._ie
-        print 'properties:'
-        for p in n._properties:
-            print '\t', p, n._properties[p]
+        print 'id', n.id
+        print 'properties:', n.properties()
 
     print "*******"
-    for edge in g.edges:
-        e = Edge(g,edge)
+    for e in g.edges():
         print "---"
-        print 'id', e._id
-        print 'in', e._in
-        print 'on', e._on
-        print 'properties:'
-        for p in e._properties:
-            print '\t', p, e._properties[p]
+        print 'id', e.id
+        print 'properties:', e.properties()
 
-
-nodes_to_create = 50
-edges_to_create = 100
+nodes_to_create = 1000
+edges_to_create = 5000
 
 ri = random.randint
 
 g = Graph()
 
-for k in g.rc.keys(): g.rc.delete(k)
+g.redis.flushdb()
 
 g = Graph()
 
-for i in range(nodes_to_create):
-    g.addn(**make_random_kwargs())
+print "creating nodes"
+for i in xrange(nodes_to_create):
+    g.add_node(**make_random_kwargs())
+    sys.stdout.write('.')
+    sys.stdout.flush()
 
-for i in range(edges_to_create):
-    g.adde(ri(0, nodes_to_create-1),ri(0, nodes_to_create-1),**make_random_kwargs()) 
+print "creating edges"
+for i in xrange(edges_to_create):
+    g.add_edge(ri(0, nodes_to_create-1),ri(0, nodes_to_create-1),**make_random_kwargs()) 
+    sys.stdout.write('.')
+    sys.stdout.flush()
 
 #dump_everything()
-n1 = Node(g,25)
-e1 = Edge(g,50)
 
-for node_obj in n1._pn():
-    print node_obj._id
-    print node_obj._p
-
-for edge_obj in n1._ie():
-    print edge_obj._id
-    print edge_obj._p
-
-print e1._in()
-
-
-for n in g.nodes:
-    try:
-        g.deln(n)
-    except:
-        print "ERROR: {}".format(n)
-        next
-
-dump_everything()
+#dump_everything()
+print 'deleting all nodes:'
+for n in g.nodes():
+    g.del_node(n)
+    sys.stdout.write('.')
+    sys.stdout.flush()
