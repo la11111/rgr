@@ -244,30 +244,27 @@ class Node(object):
 
         adding/modifying/deleting properties:
 
-        there's an 'Properties' object in each node called 'p' that provides access 
+        there's an 'Properties' object in each node called 'prop' that provides access 
         to individual properties. you access them like this:
 
         n = g.add_node()
-        n.p.name = 'bob'
-        n.p.age = 42
-        n.p.blah = 'blah'
-        del n.p.blah
-        print n.p.age
+        n.prop.name = 'bob'
+        n.prop.age = 42
+        n.prop.blah = 'blah'
+        del n.prop.blah
+        print n.prop.age
         
         etc.
 
         I'd like feedback on this, if possible; would it be better to
         try to do away with this Properties object? I only did it this 
-        way to avoid namespace collisions but it could probably be made 
-        transparent so that you could just say things like "node.name = 'bob'"
-        etc... maybe I'll play with that.
-
+        way to avoid namespace collisions. 
     """
     def __init__(self, graph, id):
         self.graph = graph
         self.id = str(id)
         self.name = graph.name + ':n:' + self.id
-        self.p = Properties(self.graph, self.name)
+        self.prop = Properties(self.graph, self.name)
   #TODO fix this so it's more gooder vv and less repeaty 
     def parents(self):
         ret = []
@@ -306,7 +303,7 @@ class Node(object):
         return list(self.graph.redis.smembers('{}:oe'.format(self.name)))
 
     def properties(self):
-        return self.p._properties()
+        return self.prop._properties()
 
 
 class Edge(object):
@@ -321,7 +318,7 @@ class Edge(object):
         self.graph = graph 
         self.id = str(id)
         self.name = graph.name + ':e:' + self.id
-        self.p = Properties(self.graph, self.name)
+        self.prop = Properties(self.graph, self.name)
 
     def in_node(self):
         return Node(self.graph, self._in_node()) 
@@ -336,7 +333,7 @@ class Edge(object):
         return self.graph.redis.get('{}:on'.format(self.name))
 
     def properties(self):
-        return self.p._properties()
+        return self.prop._properties()
 
 
 class Properties(object):

@@ -31,12 +31,13 @@ fred = g.get_nodes(name='fred') #get nodes
 
 haters = g.get_edges(rel='hates') #get edges
 for h in haters:
-  print h.in_node().p.name #incoming node - 'name' property
+  print h.in_node().prop.name #incoming node - 'name' property
 
 jnodes = g.find_nodes(name="^[Jj]")
 
-jack.p.on = 'the hill' #set and access properties by 'p' object that manages properties
-jill.p.has = 'a pail'  #is this 'p' Properties object a bad idea?
+jack.prop.on = 'the hill' #set and access properties by 'prop' object that manages properties
+jill.prop.has = 'a pail'  #is this 'prop' Properties object a bad idea?
+                          #maybe it should just act like a dict? idk
 
 for node in jack.children():
     print node.properties() 
