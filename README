@@ -1,0 +1,7 @@
+rgr.py -- A graph database built on Redis.
+
+Yea, another one...
+
+I'm not sure if my module is better than the other ones that I found by searching Pypi, and I highly doubt that it's more memory efficient. What can I say? I'm a hacker, not a computer scientist. But, It's probably easier, and simpler, if nothing else. 
+
+This is my first package, so I'm looking for feedback. If you use it, feel free to email me or make suggestions on my github page for ths project. Please tell me why I suck, and how much ;)
