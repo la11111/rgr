@@ -7,6 +7,10 @@ import sys
 
 def make_random_kwargs():
     kwargs = {}
+    namevalue = [] 
+    for v in range(random.randint(5,20)):
+        namevalue.append(random.choice(string.letters+"_:' 0123456789"))
+    kwargs['name'] = ''.join(namevalue)
     for i in range(random.randint(1,10)):
         key = []
         value = []
@@ -54,20 +58,25 @@ g = Graph()
 print "creating nodes"
 for i in xrange(nodes_to_create):
     g.add_node(**make_random_kwargs())
-    sys.stdout.write('.')
-    sys.stdout.flush()
+#    sys.stdout.write('.')
+#    sys.stdout.flush()
 
 print "creating edges"
 for i in xrange(edges_to_create):
     g.add_edge(ri(0, nodes_to_create-1),ri(0, nodes_to_create-1),**make_random_kwargs()) 
-    sys.stdout.write('.')
-    sys.stdout.flush()
+#    sys.stdout.write('.')
+#    sys.stdout.flush()
 
 #dump_everything()
-
+print "testing search"
+for n in g.find_nodes(name="jo"):
+    print n.properties()
+    print
+"""
 #dump_everything()
 print 'deleting all nodes:'
 for n in g.nodes():
     g.del_node(n)
     sys.stdout.write('.')
     sys.stdout.flush()
+"""

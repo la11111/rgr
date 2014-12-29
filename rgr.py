@@ -1,20 +1,40 @@
 #!/usr/bin/env python
-""" rgr.py - a Graph database built on Redis """
+""" rgr.py - a(nother) graph database built on Redis """
 
 import sys
-#import logging
 import re
 from redis import StrictRedis as Redis
 
-#logging.basicConfig(level=logging.DEBUG)
-#__all__ = (Graph, Node, Edge)
 #TODO: make everything atomic
 
-#public functions & classes
-
 class Graph(object):
+    """Main interface for adding/removing/looking up
+        graph elements.
+        
+        basic usage:
+        you'll add and remove elements via:
+        -add_node()/add_edge()
+        -del_node()/del_edge()
+        
+        you can also look up nodes by property:
+        get_nodes()/get_edges()
+
+        you can query by property with regex:
+        find_nodes()/find_edges()
+
+        all of these methods will return a list of 
+        Node() or Edge() objects. From these, you are
+        able to look at incoming or ourgoing edges, 
+        parent and child nodes, and individually access
+        and modify their properties.
+    """
     #TODO: better errors
     def __init__(self, name='rgr'):
+        """init.
+            parameters:
+            - name, default:'rgr', 
+            the namespace for your graph within redis.
+        """
         self.redis = Redis()
         self.name = name
         self.next_nid_key = self.name + ':next_nid' #scalar
@@ -27,6 +47,17 @@ class Graph(object):
             self.redis.set(self.next_eid_key, 0)
 
     def add_node(self, **kwargs):
+        """Add a node to the graph.
+            parameters:
+            **kwargs:
+                properties that you want to assign to
+                the node when you create it.
+
+            i.e.:
+            g = rgr.Graph()
+            n = g.add_node() #blank node
+            n2 = g.add_node(name='john', type='person')
+        """
         new_nid = self.redis.get(self.next_nid_key)
         new_node = Node(self, new_nid)
         self.redis.sadd(self.nodes_key, new_nid)
@@ -37,6 +68,13 @@ class Graph(object):
         return new_node
 
     def add_edge(self, parent, child, **kwargs):
+        """Add an edge between two nodes.
+        i.e.:
+
+        n = g.add_node(name='john')
+        n2 = g.add_node(name='mary')
+        e = g.add_edge(n, n2, rel='friends', weight=20)
+        """
         new_eid = self.redis.get(self.next_eid_key)
         new_edge = Edge(self, new_eid) 
         self.redis.sadd(self.edges_key, new_eid) 
@@ -70,6 +108,12 @@ class Graph(object):
         return new_edge
 
     def del_node(self, node):
+        """Delete a node from the graph.
+        Adjacent edges are also deleted.
+        n = g.add_node()
+        g.del_node(n) #with Node() object
+        g.del_node(254) #by node id
+        """
         if type(node) is Node:
             node_obj = node
             node = node.id
@@ -89,6 +133,9 @@ class Graph(object):
         self.redis.srem(self.nodes_key, node)
 
     def del_edge(self, edge):
+        """Delete an edge from the graph.
+        By Edge() object or by edge id.
+        """
         if type(edge) is Edge:
             edge_obj = edge
             edge = edge.id
@@ -116,18 +163,36 @@ class Graph(object):
         self.redis.srem(self.edges_key, edge)
 
     def nodes(self):
+        """Return a list of all nodes on the graph. Might be a bad idea if you have
+        a million nodes or something."""
         return [Node(self, x) for x in self.redis.smembers(self.nodes_key)]
 
     def edges(self):
+        """Return a list of all edges on the graph. Might be a bad idea if you have
+        a million edges or something."""
         return [Edge(self, x) for x in self.redis.smembers(self.edges_key)]
 
     def get_nodes(self, **kwargs):
+        """Return a list of nodes that have properties that exactly match all kwargs supplied.
+            i.e.: 
+            johns = g.get_nodes(name='John')
+            johnsmiths = g.get_nodes(name='John', lastname='Smith')
+        """
         return [Node(self, x) for x in self.redis.sinter(['{}:i:n:{}:{}'.format(self.name, k, kwargs[k]) for k in kwargs])]
     
     def get_edges(self, **kwargs):
+        """Return a list of edges that have properties that exactly match all kwargs supplied.
+            i.e.: 
+            haters = g.get_nodes(rel='hates')
+        """
         return [Edge(self, x) for x in self.redis.sinter(['{}:i:e:{}:{}'.format(self.name, k, kwargs[k]) for k in kwargs])]
 
     def find_nodes(self, **kwargs): 
+        """Like get_nodes except you can search property *values* by regex.
+            i.e.:
+            a_to_n = g.find_nodes(lastname=r'^[A-N]')
+            for n in a_to_n: print n.p.lastname
+        """
         found = []
         for k in kwargs:
             s = set()
@@ -140,6 +205,8 @@ class Graph(object):
         return [Node(self, x) for x in set.intersection(*found)]
             
     def find_edges(self, **kwargs): 
+        """search for edges by property value using regex.
+        """
         found = []
         for k in kwargs:
             s = set()
@@ -165,6 +232,37 @@ class Graph(object):
    
 
 class Node(object):
+    """Represents a graph node and provides interface to access
+        node properties, as well as adjacent nodes and edges.
+        you can create these directly if you have the node id, or else
+        any node operations of your Graph() will return sets of these 
+        to you.
+
+        parents()/children(): get lists of adjacent nodes 
+        in_edges()/out_edges(): get lists of adjacent edges
+        properties(): dump a dict of the node's properties
+
+        adding/modifying/deleting properties:
+
+        there's an 'Properties' object in each node called 'p' that provides access 
+        to individual properties. you access them like this:
+
+        n = g.add_node()
+        n.p.name = 'bob'
+        n.p.age = 42
+        n.p.blah = 'blah'
+        del n.p.blah
+        print n.p.age
+        
+        etc.
+
+        I'd like feedback on this, if possible; would it be better to
+        try to do away with this Properties object? I only did it this 
+        way to avoid namespace collisions but it could probably be made 
+        transparent so that you could just say things like "node.name = 'bob'"
+        etc... maybe I'll play with that.
+
+    """
     def __init__(self, graph, id):
         self.graph = graph
         self.id = str(id)
@@ -212,6 +310,13 @@ class Node(object):
 
 
 class Edge(object):
+    """allows access to graph edge properties, and adjacent nodes.
+        in_node()/out_node(): adjacent nodes
+        properties(): dict of edge properties
+
+        accessing/modifying/deleting individual properties:
+        the same way as with Node's, see node docstring.
+        """
     def __init__(self, graph, id):
         self.graph = graph 
         self.id = str(id)
@@ -235,6 +340,7 @@ class Edge(object):
 
 
 class Properties(object):
+    """This is internal to the Node/Edge classes, you won't use it directly."""
     def __init__(self, graph, name):
         d_ = self.__dict__
         d_['_graph'] = graph
@@ -242,7 +348,7 @@ class Properties(object):
 
     def __setattr__(self, name, value): 
         d_ = self.__dict__
-        #TODO don't let people make attributes that are in d_
+        #TODO don't let people make attributes that are in d_, or something blah
         #dbname, type, id = d_['_name'].split(':')
         if d_['_graph'].redis.hget('{}:p'.format(d_['_name']), name):
             old_value = d_['_graph'].redis.hget('{}:p'.format(d_['_name']), name)
