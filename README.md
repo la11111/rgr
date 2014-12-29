@@ -20,12 +20,12 @@ from rgr import Graph
 g = Graph()
 
 jack = g.add_node(name='jack')
-jill = g.add_node(name='jill')
+jill = g.add_node(name='jill', gender='female') #multiple properties
 
-g.add_node(name='fred')
+g.add_node(name='fred') #it's there even if you didn't keep the Node object
 
 g.add_edge(jack, jill, rel='knows')
-g.add_edge(jill, jack, rel='hates')
+g.add_edge(jill, jack, rel='hates', weight=100) #set however many properties you want
 
 fred = g.get_nodes(name='fred') #get nodes
 
@@ -33,7 +33,7 @@ haters = g.get_edges(rel='hates') #get edges
 for h in haters:
   print h.in_node().p.name #incoming node - 'name' property
 
-jnodes = g.find_nodes(name="^[Jj]")
+jnodes = g.find_nodes(name="^[Jj]") #regex queries
 
 jack.p.on = 'the hill' #set and access properties by 'p' object that manages properties
 jill.p.has = 'a pail'  #is this 'p' Properties object a bad idea?
