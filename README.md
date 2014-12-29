@@ -33,7 +33,7 @@ haters = g.get_edges(rel='hates') #get edges
 for h in haters:
   print h.in_node().p.name #incoming node - 'name' property
 
-jnodes = g.find_nodes(name="j.*")
+jnodes = g.find_nodes(name="^[Jj]")
 
 jack.p.on = 'the hill' #set and access properties by 'p' object that manages properties
 jill.p.has = 'a pail'  #is this 'p' Properties object a bad idea?
