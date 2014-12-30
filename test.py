@@ -11,7 +11,7 @@ def make_random_kwargs():
     for v in range(random.randint(5,20)):
         namevalue.append(random.choice(string.letters+"_:' 0123456789"))
     kwargs['name'] = ''.join(namevalue)
-    for i in range(random.randint(1,10)):
+    for i in range(random.randint(3,5)):
         key = []
         value = []
         key.append(random.choice(string.letters))
@@ -43,9 +43,9 @@ def dump_everything():
         print "---"
         print 'id', e.id
         print 'properties:', e.properties()
-
-nodes_to_create = 1000
-edges_to_create = 5000
+"""
+nodes_to_create = 100000
+edges_to_create = 500000
 
 ri = random.randint
 
@@ -58,14 +58,14 @@ g = Graph()
 print "creating nodes"
 for i in xrange(nodes_to_create):
     g.add_node(**make_random_kwargs())
-#    sys.stdout.write('.')
-#    sys.stdout.flush()
+    sys.stdout.write('.')
+    sys.stdout.flush()
 
 print "creating edges"
 for i in xrange(edges_to_create):
     g.add_edge(ri(0, nodes_to_create-1),ri(0, nodes_to_create-1),**make_random_kwargs()) 
-#    sys.stdout.write('.')
-#    sys.stdout.flush()
+    sys.stdout.write('.')
+    sys.stdout.flush()
 
 #dump_everything()
 print "testing search"
@@ -74,9 +74,9 @@ for n in g.find_nodes(name="jo"):
     print
 """
 #dump_everything()
+g = Graph()
 print 'deleting all nodes:'
 for n in g.nodes():
     g.del_node(n)
     sys.stdout.write('.')
     sys.stdout.flush()
-"""
