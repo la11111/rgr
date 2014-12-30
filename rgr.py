@@ -62,7 +62,7 @@ class Graph(object):
         new_node = Node(self, new_nid)
         self.redis.sadd(self.nodes_key, new_nid)
         for k in kwargs:
-            new_node.p.__setattr__(k, kwargs[k])
+            new_node.prop.__setattr__(k, kwargs[k])
             self._index(new_node.name, k, kwargs[k]) 
         self.redis.incr(self.next_nid_key)
         return new_node
@@ -79,7 +79,7 @@ class Graph(object):
         new_edge = Edge(self, new_eid) 
         self.redis.sadd(self.edges_key, new_eid) 
         for k in kwargs:
-            new_edge.p.__setattr__(k, kwargs[k])
+            new_edge.prop.__setattr__(k, kwargs[k])
             self._index(new_edge.name, k, kwargs[k]) 
         if type(parent) is Node:
             parent = parent.id
