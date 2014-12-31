@@ -65,11 +65,13 @@ haters = [x.in_node() for x in g.get_edges(rel='hates')] #a better way to find t
 ###Todo:
 
 - make operations atomic - right now this library is NOT thread safe
-- make code more idiomatic
+- bulk (multi/exec) operations (it could be way faster if you're adding, say, a bunch of nodes at once)
+- undirected edges (really just functions like neighbors() to make it easier to use them as such)
+- docs and tests
+- more efficient data storage in redis where possible
 
-#####Misc:
-- test, debug, standardize/cleanup
-- 
+This is mostly an academic project for me, although it would be neat if someone found it useful. I've been learning about graph algorithms, so I'm thinking of working on a subgraph/analytics module to go along with this; also, to prepare myself knowledge-wise for another project I'd like to start, I'm thinking about implementing a gremlin interpreter to go along with rgr as well.
+
 ###Benchmarks/Tests I've done :
 
 12/29/2014: using using the version of test.py in the repo today, i added 100,000 nodes and 500,000 edges with between 3-5 totally random properties each (anywhere from 2-20 chars i believe for the key and value) and one 'name' property with a random string as the value. Each object was about 160 bytes on average, including the element data and indices; my 1.8Ghz celeron laptop added about 175-200 elements per second; altogether, these 600,000 elements took up 950MB of memory within redis. I also deleted each node one by one, which I didn't time, but i would guess it was at around 100 nodes per second (when a node is deleted, all adjacent edges are deleted as well). The only operation that isn't constant time is find_nodes(), which for 100,000 elements took 12 seconds and for 500,000 elements took a minute. (go figure ;P)
