@@ -59,7 +59,6 @@ print [x.properties() for x in filter(lambda n: not n.prop.name, g.get_nodes(typ
 # [{'age': '35', 'type': 'person'}, {'age': '34.2', 'type': 'person'}, 
 # {'age': '999', 'type': 'person'}]
 
-
 haters = [x.in_node() for x in g.get_edges(rel='hates')] #a better way to find the haters
 
 ```
