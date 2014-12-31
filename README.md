@@ -42,6 +42,18 @@ jill.prop.has = 'a pail'  #is this 'prop' Properties object a bad idea?
 for node in jack.children():
     print node.properties() 
 
+########    
+# some more advanced stuff:
+########
+
+younguns = filter(lambda n: n.prop.age < 30, g.get_nodes(type='person'))
+
+#only people with names set
+print [x.properties() for x in filter(lambda n: (n.prop.name), g.get_nodes(type='person')]
+# [{'age': '54', 'name': 'bob', 'type': 'person'}, {'age': '12', 'name': 'jake', 'type': 'person'}, {'age': '28', 'name': 'brenna', 'type': 'person'}, {'age': '28', 'name': 'foo', 'type': 'person'}]
+
+haters = [x.in_node() for x in g.get_edges(rel='hates')] #a better way to find the haters
+
 ```
 ###Todo:
 
