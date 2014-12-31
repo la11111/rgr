@@ -56,8 +56,7 @@ print [x.properties() for x in filter(lambda n: n.prop.name, g.get_nodes(type='p
 
 #whoever added these guys to the database is in big trouble!
 print [x.properties() for x in filter(lambda n: not n.prop.name, g.get_nodes(type='person'))]
-# [{'age': '35', 'type': 'person'}, {'age': '34.2', 'type': 'person'}, 
-# {'age': '999', 'type': 'person'}]
+# [{'age': '35', 'type': 'person'}, {'age': '999', 'type': 'person'}]
 
 haters = [x.in_node() for x in g.get_edges(rel='hates')] #a better way to find the haters
 
