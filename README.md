@@ -50,12 +50,12 @@ younguns = filter(lambda n: n.prop.age < 30, g.get_nodes(type='person'))
 middle_aged = filter(lambda n: (n.prop.age >= 30) and (n.prop.age < 50), g.get_nodes(type='person'))
 
 #only people with names set
-print [x.properties() for x in filter(lambda n: n.prop.name, g.get_nodes(type='person')]
+print [x.properties() for x in filter(lambda n: n.prop.name, g.get_nodes(type='person'))]
 # [{'age': '54', 'name': 'bob', 'type': 'person'}, {'age': '12', 'name': 'jake', 'type': 'person'}, 
 # {'age': '28', 'name': 'brenna', 'type': 'person'}, {'age': '28', 'name': 'foo', 'type': 'person'}]
 
-#whoever added these guys to the database is in big trouble
-print [x.properties() for x in filter(lambda n: not n.prop.name, g._nodes())]
+#whoever added these guys to the database is in big trouble!
+print [x.properties() for x in filter(lambda n: not n.prop.name, g.get_nodes(type='person'))]
 # [{'age': '35', 'type': 'person'}, {'age': '34.2', 'type': 'person'}, 
 # {'age': '999', 'type': 'person'}]
 
