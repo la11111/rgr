@@ -69,7 +69,7 @@ haters = [x.in_node() for x in g.get_edges(rel='hates')] #a better way to find t
 - docs and tests
 - more efficient data storage in redis where possible
 
-This is mostly an academic project for me, although it would be neat if someone found it useful. I've been learning about graph algorithms, so I'm thinking of working on a subgraph/analytics module to go along with this; also, to prepare myself knowledge-wise for another project I'd like to start, I'm thinking about implementing a gremlin interpreter to go along with rgr as well.
+This is mostly an academic/toy project, written over christmas break to serve as a code sample; although it would be neat if someone found it useful. I've been learning about graph algorithms, so I'm thinking of working on a subgraph/analytics module to go along with this.
 
 ###Benchmarks/Tests I've done :
 
