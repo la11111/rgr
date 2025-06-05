@@ -4,7 +4,7 @@ a graph database for Python, built on Redis
 
 ###Goal:
 
-- Pythonic, simple, flexible, unassuming graph database. MEOW
+- Pythonic, simple, flexible, unassuming graph database.
 
 
 ###Prerequisites:
